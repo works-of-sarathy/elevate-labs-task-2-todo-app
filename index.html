@@ -1,33 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced To-Do App</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Enhanced To-Do List</title>
+
 </head>
 <body>
-<div class="container">
-    <h1>To-Do List</h1>
-    <div class="controls">
-        <input type="text" id="taskInput" placeholder="Enter a task..." aria-label="Task input" />
-        <input type="date" id="dueDateInput" />
-        <select id="priorityInput">
-            <option value="low">Low</option>
-            <option value="medium" selected>Medium</option>
-            <option value="high">High</option>
-        </select>
-        <button id="addBtn">Add</button>
-    </div>
-    <div class="filters">
-        <button data-filter="all" class="filterBtn active">All</button>
-        <button data-filter="pending" class="filterBtn">Pending</button>
-        <button data-filter="completed" class="filterBtn">Completed</button>
-        <button id="themeToggle">Toggle Theme</button>
-        <button id="clearCompletedBtn">Clear Completed</button>
-    </div>
-    <ul id="taskList"></ul>
+<div class="container" role="main" aria-label="Task management application">
+  <h1>To-Do List</h1>
+  <div class="controls">
+    <input type="text" id="taskInput" placeholder="Add new task..." aria-label="Task description" />
+    <input type="date" id="dueDateInput" aria-label="Due date" />
+    <select id="priorityInput" aria-label="Select priority">
+      <option value="" disabled selected>Priority</option>
+      <option value="Low">Low</option>
+      <option value="Medium">Medium</option>
+      <option value="High">High</option>
+    </select>
+    <button id="addBtn" aria-label="Add task">Add</button>
+  </div>
+  <ul id="taskList" aria-live="polite" aria-relevant="additions removals"></ul>
+  <div class="filters" role="group" aria-label="Filter tasks">
+    <button class="filterBtn active" data-filter="all">All</button>
+    <button class="filterBtn" data-filter="pending">Pending</button>
+    <button class="filterBtn" data-filter="completed">Completed</button>
+  </div>
+  <button id="clearCompletedBtn" class="clear-btn" aria-label="Clear completed tasks">Clear Completed</button>
+  <div class="theme-toggle-container">
+    <button id="themeToggle" aria-label="Toggle light/dark theme">Toggle Theme</button>
+  </div>
+    <footer>
+        <p>&copy; 2025 Elevate Labs Internship <br> Made by Satagopan Gopalakrishnan</p>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/sarathy07" target="_blank">LinkedIn</a> | 
+          <a href="https://github.com/works-of-sarathy/" target="_blank">GitHub</a> | 
+          <a href="https://www.instagram.com/ft._sarathy/" target="_blank">Instagram</a>
+        </div>
+    </footer>
 </div>
-<script src="script.js"></script>
 </body>
 </html>

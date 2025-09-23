@@ -1,118 +1,142 @@
-// Get DOM elements
-const addBtn = document.getElementById('addBtn');
-const taskInput = document.getElementById('taskInput');
-const dueDateInput = document.getElementById('dueDateInput');
-const priorityInput = document.getElementById('priorityInput');
-const taskList = document.getElementById('taskList');
-const filterBtns = document.querySelectorAll('.filterBtn');
-const themeToggle = document.getElementById('themeToggle');
-const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+/* script.js */
+    const addBtn = document.getElementById('addBtn');
+    const taskInput = document.getElementById('taskInput');
+    const dueDateInput = document.getElementById('dueDateInput');
+    const priorityInput = document.getElementById('priorityInput');
+    const taskList = document.getElementById('taskList');
+    const filterBtns = document.querySelectorAll('.filterBtn');
+    const themeToggle = document.getElementById('themeToggle');
+    const clearCompletedBtn = document.getElementById('clearCompletedBtn');
 
-let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-let currentFilter = 'all';
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    let currentFilter = 'all';
 
-// Utilities
-function saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-}
-function renderTasks() {
-    taskList.innerHTML = '';
-    let filteredTasks = tasks.filter(task => {
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+    
+    // Find the original index of a task before filtering
+    function findTaskIndex(taskToFind) {
+      return tasks.findIndex(task => 
+        task.text === taskToFind.text && 
+        task.dueDate === taskToFind.dueDate && 
+        task.priority === taskToFind.priority &&
+        task.completed === taskToFind.completed
+      );
+    }
+
+    function renderTasks() {
+      taskList.innerHTML = '';
+      let filteredTasks = tasks.filter(task => {
         if (currentFilter === 'all') return true;
         if (currentFilter === 'pending') return !task.completed;
-        return task.completed;
-    });
-    filteredTasks.forEach((task, idx) => {
+        if (currentFilter === 'completed') return task.completed;
+      });
+      
+      filteredTasks.forEach((task) => {
         const li = document.createElement('li');
         li.className = task.completed ? 'completed' : '';
-        li.innerHTML = `
-            <div>
-                <input type="checkbox" ${task.completed ? 'checked' : ''} data-idx="${idx}" class="complete-chk" />
-                <span class="task-text">${escapeHtml(task.text)}</span>
-                <span class="badge badge-priority badge-${task.priority}">${capitalize(task.priority)}</span>
-                <span class="due-date">${task.dueDate ? 'Due: ' + task.dueDate : ''}</span>
-            </div>
-            <div class="task-controls">
-                <button class="edit-btn" data-idx="${idx}">Edit</button>
-                <button class="remove-btn" data-idx="${idx}">Delete</button>
-            </div>
-        `;
-        taskList.appendChild(li);
-    });
-}
-// Escape HTML function for safe output
-function escapeHtml(str) {
-    return str.replace(/[&<>"']/g, ch => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[ch]));
-}
-function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
-// Add new task
-function addTask() {
-    const text = taskInput.value.trim();
-    const dueDate = dueDateInput.value;
-    const priority = priorityInput.value;
+        const originalIndex = findTaskIndex(task);
 
-    if (!text) return;
-    tasks.push({
-        text, dueDate, priority,
-        completed: false
+        li.innerHTML = `
+          <div class="task-info">
+            <strong>${task.text}</strong>
+            <div class="task-meta">
+              Due: ${task.dueDate || 'No date'} | Priority: ${task.priority || 'None'}
+            </div>
+          </div>
+          <div class="task-actions">
+            <input type="checkbox" aria-label="Mark task as completed" ${task.completed ? 'checked' : ''} data-index="${originalIndex}" />
+            <button aria-label="Delete task" class="deleteBtn" data-index="${originalIndex}">✖</button>
+          </div>
+        `;
+        
+        taskList.appendChild(li);
+      });
+    }
+    
+    taskList.addEventListener('click', (e) => {
+        // Handle checkbox change
+        if (e.target.type === 'checkbox') {
+            const index = e.target.dataset.index;
+            if (index !== -1) {
+                tasks[index].completed = e.target.checked;
+                saveTasks();
+                renderTasks();
+            }
+        }
+        
+        // Handle delete button click
+        if (e.target.classList.contains('deleteBtn')) {
+            const index = e.target.dataset.index;
+             if (index !== -1) {
+                tasks.splice(index, 1);
+                saveTasks();
+                renderTasks();
+            }
+        }
     });
-    saveTasks();
-    renderTasks();
-    taskInput.value = '';
-    dueDateInput.value = '';
-}
-addBtn.addEventListener('click', addTask);
-taskInput.addEventListener('keypress', e => { if (e.key === 'Enter') addTask(); });
-// Task interaction: complete, edit, remove
-taskList.addEventListener('click', e => {
-    const idx = e.target.dataset.idx;
-    if (e.target.classList.contains('complete-chk')) {
-        tasks[idx].completed = e.target.checked;
-        saveTasks();
-        renderTasks();
-    }
-    if (e.target.classList.contains('remove-btn')) {
-        tasks.splice(idx, 1);
-        saveTasks();
-        renderTasks();
-    }
-    if (e.target.classList.contains('edit-btn')) {
-        editTask(idx);
-    }
-});
-function editTask(idx) {
-    const li = taskList.children[idx];
-    const task = tasks[idx];
-    const newText = prompt('Edit your task:', task.text);
-    if (newText !== null && newText.trim()) {
-        task.text = newText.trim();
-        saveTasks();
-        renderTasks();
-    }
-}
-// Filtering
-filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+
+    addBtn.addEventListener('click', () => {
+      if (taskInput.value.trim() === '') {
+        // In a real app, you'd show a prettier message, not an alert.
+        // For this environment, we avoid alerts. Let's just return.
+        console.error('Task description cannot be empty.');
+        return;
+      }
+      tasks.push({
+        text: taskInput.value.trim(),
+        dueDate: dueDateInput.value,
+        priority: priorityInput.value,
+        completed: false
+      });
+      taskInput.value = '';
+      dueDateInput.value = '';
+      priorityInput.value = '';
+      saveTasks();
+      renderTasks();
+    });
+
+    taskInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault(); // Prevents form submission if it were in a form
+        addBtn.click();
+      }
+    });
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
         filterBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
+        currentFilter = btn.getAttribute('data-filter');
+        renderTasks();
+      });
+    });
+
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      if (document.body.classList.contains('dark')) {
+        localStorage.setItem('theme', 'dark');
+      } else {
+        localStorage.removeItem('theme');
+      }
+    });
+
+    clearCompletedBtn.addEventListener('click', () => {
+      tasks = tasks.filter(task => !task.completed);
+      saveTasks();
+      renderTasks();
+    });
+
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+      }
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTheme();
         renderTasks();
     });
-});
-// Theme toggle
-themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark');
-    // Optionally, save preference here
-});
-// Bulk clear
-clearCompletedBtn.addEventListener('click', () => {
-    tasks = tasks.filter(t => !t.completed);
-    saveTasks();
-    renderTasks();
-});
-// Initial render
-document.addEventListener('DOMContentLoaded', renderTasks);
