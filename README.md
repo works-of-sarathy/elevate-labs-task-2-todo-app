@@ -1,6 +1,6 @@
 # Elevate Labs Internship – Task 2
 
-This project is a **responsive To-Do List web application** built using **HTML, CSS, and JavaScript** as part of **Task 1 of the Elevate Labs Internship**.
+This project is a **responsive To-Do List web application** built using **HTML, CSS, and JavaScript** as part of the **Elevate Labs Internship**.
 
 ## 🚀 Features
 - Add, delete, and mark tasks as complete  
